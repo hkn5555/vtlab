@@ -1,0 +1,257 @@
+-- Client Master Table
+CREATE TABLE client_master (
+    Client_no VARCHAR(6) NOT NULL PRIMARY KEY,
+    Name VARCHAR(20) NOT NULL,
+    Address1 VARCHAR(30),
+    Address2 VARCHAR(30),
+    City VARCHAR(15),
+    State VARCHAR(15),
+    Pincode INT CHECK (Pincode > 0),
+    Bal_due INT CHECK (Bal_due >= 0)
+);
+
+INSERT INTO client_master (Client_no, Name, Address1, Address2, City, State, Pincode, Bal_due)
+VALUES
+('0001', 'Ivan', NULL, NULL, 'Bombay', 'Maharashtra', 400054, 15000),
+('0002', 'Vandana', NULL, NULL, 'Madras', 'Tamilnadu', 780001, 0),
+('0003', 'Pramada', NULL, NULL, 'Bombay', 'Maharashtra', 400057, 5000),
+('0004', 'Basu', NULL, NULL, 'Bombay', 'Maharashtra', 400056, 0),
+('0005', 'Ravi', NULL, NULL, 'Delhi', 'Delhi', 100001, 2000),
+('0006', 'Rukmini', NULL, NULL, 'Bombay', 'Maharashtra', 400050, 0);
+
+-- Product Master Table
+CREATE TABLE product_master (
+    Product_no VARCHAR(6) NOT NULL PRIMARY KEY,
+    Description VARCHAR(30),
+    Profit_percent FLOAT CHECK (Profit_percent > 0),
+    Unit_measure VARCHAR(10),
+    Qty_on_hand INT CHECK (Qty_on_hand >= 0),
+    Reorder_lvl INT CHECK (Reorder_lvl >= 0),
+    Sell_price INT CHECK (Sell_price > 0),
+    Cost_price INT CHECK (Cost_price > 0)
+);
+
+INSERT INTO product_master (Product_no, Description, Profit_percent, Unit_measure, Qty_on_hand, Reorder_lvl, Sell_price, Cost_price)
+VALUES
+('P00001', '1.44 Floppies', 5, 'Piece', 100, 20, 525, 500),
+('P03453', 'Monitors', 6, 'Piece', 10, 3, 12000, 11200),
+('P06734', 'Mouse', 5, 'Piece', 20, 5, 1050, 500),
+('P07865', '1.22 Floppies', 5, 'Piece', 100, 20, 525, 500),
+('P07868', 'Keyboards', 2, 'Piece', 10, 3, 3150, 3050),
+('P07885', 'CD Drive', 2.5, 'Piece', 10, 3, 5250, 5100),
+('P07965', '540 HDD', 4, 'Piece', 10, 3, 8400, 8000),
+('P07975', '1.44 Drive', 5, 'Piece', 10, 3, 1050, 1000),
+('P08865', '1.22 Drive', 5, 'Piece', 2, 3, 1050, 1000);
+
+-- Salesman Master Table
+CREATE TABLE salesman_master (
+    Salesman_no VARCHAR(6) NOT NULL PRIMARY KEY,
+    Sal_name VARCHAR(20) NOT NULL,
+    Address VARCHAR(20) NOT NULL,
+    City VARCHAR(20) NOT NULL,
+    State VARCHAR(20) NOT NULL,
+    Pincode INT NOT NULL CHECK (Pincode > 0),
+    Sal_amt INT NOT NULL CHECK (Sal_amt > 0),
+    Tgt_to_get INT NOT NULL CHECK (Tgt_to_get > 0),
+    Ytd_sales INT NOT NULL CHECK (Ytd_sales > 0),
+    Remarks VARCHAR(30)
+);
+
+INSERT INTO salesman_master (Salesman_no, Sal_name, Address, City, State, Pincode, Sal_amt, Tgt_to_get, Ytd_sales, Remarks)
+VALUES
+('S0001', 'Kiran', 'A/14 Worli', 'Bombay', 'Mah', 400002, 3000, 100, 50, 'Good'),
+('S0002', 'Manish', '65, Nariman', 'Bombay', 'Mah', 400001, 3000, 200, 100, 'Good'),
+('S0003', 'Ravi', 'P-7 Bandra', 'Bombay', 'Mah', 400032, 3000, 200, 100, 'Good'),
+('S0004', 'Ashish', 'A/5 Juhu', 'Bombay', 'Mah', 400044, 3500, 200, 150, 'Good');
+
+-- Sales Order Table
+CREATE TABLE sales_order (
+    S_order_no VARCHAR(6) NOT NULL PRIMARY KEY,
+    S_order_date DATE NOT NULL,
+    Client_no VARCHAR(6) NOT NULL,
+    Dely_add VARCHAR(50),
+    Salesman_no VARCHAR(6) NOT NULL,
+    Dely_type CHAR(1) NOT NULL DEFAULT 'f' CHECK (Dely_type IN ('p', 'f')),
+    Billed_yn CHAR(1) NOT NULL DEFAULT 'f' CHECK (Billed_yn IN ('y', 'n')),
+    Dely_date DATE NOT NULL,
+    Order_status VARCHAR(10) NOT NULL CHECK (Order_status IN ('in process', 'fulfilled', 'back order', 'canceled')),
+    FOREIGN KEY (Client_no) REFERENCES client_master(Client_no),
+    FOREIGN KEY (Salesman_no) REFERENCES salesman_master(Salesman_no)
+);
+
+INSERT INTO sales_order (S_order_no, S_order_date, Client_no, Dely_add, Dely_type, Billed_yn, Salesman_no, Dely_date, Order_status)
+VALUES
+('019001', '1996-01-12', '0001', NULL, 'f', 'n', 'S0001', '1996-01-20', 'in process'),
+('019002', '1996-01-25', '0002', NULL, 'p', 'n', 'S0002', '1996-01-27', 'canceled'),
+('016865', '1996-02-18', '0003', NULL, 'f', 'y', 'S0003', '1996-02-20', 'fulfilled'),
+('019003', '1996-04-03', '0001', NULL, 'f', 'n', 'S0001', '1996-04-07', 'fulfilled'),
+('046865', '1996-02-18', '0003', NULL, 'f', 'y', 'S0003', '1996-02-20', 'fulfilled'),
+('046866', '1996-03-10', '0004', NULL, 'f', 'n', 'S0004', '1996-03-15', 'in process'),
+('010008', '1996-04-12', '0005', NULL, 'f', 'n', 'S0002', '1996-04-20', 'in process');
+
+
+-- Sales Order Details Table
+CREATE TABLE sales_order_details (
+    S_order_no VARCHAR(6) NOT NULL,
+    Product_no VARCHAR(6) NOT NULL,
+    Qty_order INT NOT NULL CHECK (Qty_order >= 0),
+    Qty_disp INT NOT NULL CHECK (Qty_disp >= 0),
+    Product_rate DECIMAL(10, 2) NOT NULL CHECK (Product_rate > 0),
+    PRIMARY KEY (S_order_no, Product_no),
+    FOREIGN KEY (S_order_no) REFERENCES sales_order(S_order_no),
+    FOREIGN KEY (Product_no) REFERENCES product_master(Product_no)
+);
+
+INSERT INTO sales_order_details (S_order_no, Product_no, Qty_order, Qty_disp, Product_rate)
+VALUES
+('019001', 'P00001', 4, 4, 525),
+('019001', 'P07965', 2, 1, 8400),
+('019001', 'P07885', 2, 1, 5250),
+('019002', 'P00001', 10, 0, 525),
+('046865', 'P07868', 3, 3, 3150),
+('046865', 'P07885', 10, 10, 5250),
+('019003', 'P00001', 4, 4, 1050),
+('019003', 'P03453', 2, 2, 1050),
+('046866', 'P06734', 1, 1, 12000),
+('046866', 'P07965', 1, 0, 8400),
+('010008', 'P07975', 1, 0, 1050),
+('010008', 'P00001', 10, 5, 525);
+
+
+salesman_master tablosu üzerinde tgt_to_get değeri 200 den büyük olanlar için
+bir view oluşturunuz.
+
+CREATE VIEW SalesmanHighTarget AS
+SELECT
+    Salesman_no,
+    Sal_name,
+    Address,
+    City,
+    State,
+    Pincode,
+    Sal_amt,
+    Tgt_to_get,
+    Ytd_sales,
+    Remarks
+FROM
+    salesman_master
+WHERE
+    Tgt_to_get > 200;
+
+2. product_master tablosu üzerinde product_view isminde bir view oluşturunuz ve
+sütun isimlerini pro_no, desc, profit, Unit_measure, qty olacak şekilde sırasıyla
+değiştiriniz.
+
+CREATE VIEW product_view AS
+SELECT
+    Product_no AS pro_no,
+    Description AS "desc",
+    Profit_percent AS profit,
+    Unit_measure,
+    Qty_on_hand AS qty
+FROM
+    product_master;
+
+3. product_view isimli view’den Qty_on_hand değeri ‘10’ olan product isimlerini
+getiren bir sorgu yazınız
+
+SELECT "desc"
+FROM product_view
+WHERE qty = 10;
+
+4. sipariş tarihi 10 gün geçen siparişleri müşteri isimleri ve ürün isimleri olarak
+listeleyen bir SQL sorgusu yazınız.
+
+SELECT 
+    cm.Name AS CustomerName,
+    pm.Description AS ProductName,
+    so.S_order_date AS OrderDate,
+    DATEDIFF(DAY, so.S_order_date, GETDATE()) AS DaysElapsed
+FROM 
+    sales_order AS so
+INNER JOIN 
+    client_master AS cm ON so.Client_no = cm.Client_no
+INNER JOIN 
+    sales_order_details AS sod ON so.S_order_no = sod.S_order_no
+INNER JOIN 
+    product_master AS pm ON sod.Product_no = pm.Product_no
+WHERE 
+    DATEDIFF(DAY, so.S_order_date, GETDATE()) > 10;
+
+
+
+5. sales_order tablosunu kullanarak günlük siparişleri listelemeye yarayan bir view
+oluşturunuz. (Bu view her çalıştırıldığında sistem tarihini alarak o güne ilişkin
+siparişleri listelemelidir.)
+
+CREATE VIEW DailyOrders AS
+SELECT 
+    S_order_no,
+    S_order_date,
+    Client_no,
+    Dely_add,
+    Salesman_no,
+    Dely_type,
+    Billed_yn,
+    Dely_date,
+    Order_status
+FROM 
+    sales_order
+WHERE 
+    CAST(S_order_date AS DATE) = CAST(GETDATE() AS DATE);
+
+
+6.
+
+Her hangi bir tablo oluşturunuz. Oluşturmuş olduğunuz tabloda anlatılan
+kısıtlayıcılardan en az iki kullanıma örnek vererek gösteriniz.
+
+
+CREATE TABLE employee (
+    Employee_ID INT NOT NULL PRIMARY KEY, -- PRIMARY KEY kısıtlayıcı
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Salary DECIMAL(10, 2) NOT NULL CHECK (Salary > 0), -- CHECK kısıtlayıcı (Pozitif maaş kontrolü)
+    Age INT NOT NULL CHECK (Age BETWEEN 18 AND 65) -- CHECK kısıtlayıcı (Yaş sınırı kontrolü)
+);
+
+Açıklama:
+PRIMARY KEY Kısıtlayıcı:
+
+Employee_ID sütununa atanmıştır.
+
+Her çalışanın benzersiz bir kimlik numarası olacaktır.
+
+NULL değerler ve tekrar eden değerler kabul edilmez.
+
+CHECK Kısıtlayıcıları:
+
+Salary > 0: Çalışanın maaşı pozitif bir değer olmalıdır. Negatif veya sıfır maaş girişi kabul edilmez.
+
+Age BETWEEN 18 AND 65: Çalışanın yaşı 18 ile 65 arasında olmalıdır. Bu aralık dışındaki yaşlar kabul edilmez.
+
+7. Her hangi bir tablo oluşturunuz. Oluşturmuş olduğunuz tablo için indeks yapısı
+kullanarak en az iki sorgu çalıştırıp gösteriniz.
+
+
+CREATE TABLE ogrenci (
+    Ogrenci_ID INT NOT NULL PRIMARY KEY, -- Birincil anahtar (otomatik indeks)
+    Isim VARCHAR(50) NOT NULL,
+    Soyisim VARCHAR(50),
+    Bolum VARCHAR(30),
+    Not_Ortalamasi DECIMAL(4, 2)
+);
+
+CREATE INDEX idx_ogrenci_isim ON ogrenci(Isim);
+
+CREATE INDEX idx_bolum_not ON ogrenci(Bolum, Not_Ortalamasi);
+
+CREATE INDEX idx_ogrenci_soyisim ON ogrenci(Soyisim);
+
+
+
+
+
+
+
+
